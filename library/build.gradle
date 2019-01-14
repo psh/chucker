@@ -1,6 +1,7 @@
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
+apply plugin: 'kotlin-kapt'
 apply plugin: 'org.jetbrains.dokka-android'
 
 android {
@@ -54,9 +55,11 @@ dependencies {
 
     implementation "com.google.code.gson:gson:$gsonVersion"
     implementation "com.squareup.okhttp3:okhttp:$okhttp3Version"
-    implementation "nl.qbusict:cupboard:$cupboardVersion"
     implementation "com.android.support:design:$supportLibVersion"
     implementation "com.android.support.constraint:constraint-layout:$constraintLayoutVersion"
+
+    implementation "android.arch.persistence.room:runtime:1.1.1"
+    kapt "android.arch.persistence.room:compiler:1.1.1"
 
     testImplementation "org.junit.jupiter:junit-jupiter-api:5.3.1"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.3.1"
