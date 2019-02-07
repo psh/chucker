@@ -17,12 +17,13 @@ package com.readystatesoftware.chuck.internal.support;
 
 import android.content.Context;
 import android.text.TextUtils;
+import android.util.Log;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
 import com.readystatesoftware.chuck.R;
 import com.readystatesoftware.chuck.internal.data.HttpHeader;
 import com.readystatesoftware.chuck.internal.data.HttpTransaction;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
 
 import org.xml.sax.InputSource;
 
@@ -39,6 +40,8 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.stream.StreamResult;
+
+import androidx.core.content.ContextCompat;
 
 public class FormatUtils {
 
@@ -57,16 +60,32 @@ public class FormatUtils {
         int unit = si ? 1000 : 1024;
         if (bytes < unit) return bytes + " B";
         int exp = (int) (Math.log(bytes) / Math.log(unit));
-        String pre = (si ? "kMGTPE" : "KMGTPE").charAt(exp-1) + (si ? "" : "i");
+        String pre = (si ? "kMGTPE" : "KMGTPE").charAt(exp - 1) + (si ? "" : "i");
         return String.format(Locale.US, "%.1f %sB", bytes / Math.pow(unit, exp), pre);
     }
 
-    public static String formatJson(String json) {
+    public static CharSequence formatJson(String json) {
         try {
             JsonParser jp = new JsonParser();
             JsonElement je = jp.parse(json);
             return JsonConvertor.getInstance().toJson(je);
         } catch (Exception e) {
+            return json;
+        }
+    }
+
+    public static CharSequence formatJsonWithSyntaxHighlight(Context context, String json) {
+        try {
+            int nameColor = ContextCompat.getColor(context, R.color.name_style);
+            int numberColor = ContextCompat.getColor(context, R.color.number_style);
+            int stringColor = ContextCompat.getColor(context, R.color.string_style);
+            int booleanColor = ContextCompat.getColor(context, R.color.boolean_style);
+
+            PrettyJsonWriter writer = new PrettyJsonWriter(nameColor, stringColor, numberColor, booleanColor);
+            writer.write(new JsonParser().parse(json));
+            return writer.getOutput();
+        } catch (Exception e) {
+            Log.e("@@@", "Failed to parse incoming JSON", e);
             return json;
         }
     }
@@ -79,7 +98,7 @@ public class FormatUtils {
             Source xmlSource = new SAXSource(new InputSource(new ByteArrayInputStream(xml.getBytes())));
             StreamResult res = new StreamResult(new ByteArrayOutputStream());
             serializer.transform(xmlSource, res);
-            return new String(((ByteArrayOutputStream)res.getOutputStream()).toByteArray());
+            return new String(((ByteArrayOutputStream) res.getOutputStream()).toByteArray());
         } catch (Exception e) {
             return xml;
         }
@@ -107,7 +126,7 @@ public class FormatUtils {
         if (!TextUtils.isEmpty(headers)) {
             text += headers + "\n";
         }
-        text += (transaction.requestBodyIsPlainText()) ? v(transaction.getFormattedRequestBody()) :
+        text += (transaction.requestBodyIsPlainText()) ? v(transaction.getFormattedRequestBody(context, false)) :
                 context.getString(R.string.chuck_body_omitted);
         text += "\n\n";
         text += "---------- " + context.getString(R.string.chuck_response) + " ----------\n\n";
@@ -115,7 +134,7 @@ public class FormatUtils {
         if (!TextUtils.isEmpty(headers)) {
             text += headers + "\n";
         }
-        text += (transaction.responseBodyIsPlainText()) ? v(transaction.getFormattedResponseBody()) :
+        text += (transaction.responseBodyIsPlainText()) ? v(transaction.getFormattedResponseBody(context, false)) :
                 context.getString(R.string.chuck_body_omitted);
         return text;
     }
@@ -155,7 +174,7 @@ public class FormatUtils {
         return sw.toString();
     }
 
-    private static String v(String string) {
+    private static CharSequence v(CharSequence string) {
         return (string != null) ? string : "";
     }
 }

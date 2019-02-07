@@ -15,6 +15,7 @@
  */
 package com.readystatesoftware.chuck.internal.data;
 
+import android.content.Context;
 import android.net.Uri;
 
 import com.google.gson.reflect.TypeToken;
@@ -36,7 +37,7 @@ public class HttpTransaction {
         Failed
     }
 
-    public static final String[] PARTIAL_PROJECTION = new String[] {
+    public static final String[] PARTIAL_PROJECTION = new String[]{
             "_id",
             "requestDate",
             "tookMs",
@@ -51,7 +52,8 @@ public class HttpTransaction {
     };
 
     private Long _id;
-    @Index private Date requestDate;
+    @Index
+    private Date requestDate;
     private Date responseDate;
     private Long tookMs;
 
@@ -136,8 +138,8 @@ public class HttpTransaction {
         return requestBody;
     }
 
-    public String getFormattedRequestBody() {
-        return formatBody(requestBody, requestContentType);
+    public CharSequence getFormattedRequestBody(Context context, boolean includeSyntaxHighlight) {
+        return formatBody(context, requestBody, requestContentType, includeSyntaxHighlight);
     }
 
     public HttpTransaction setRequestBody(String requestBody) {
@@ -176,8 +178,8 @@ public class HttpTransaction {
         return responseBody;
     }
 
-    public String getFormattedResponseBody() {
-        return formatBody(responseBody, responseContentType);
+    public CharSequence getFormattedResponseBody(Context context, boolean includeSyntaxHighlight) {
+        return formatBody(context, responseBody, responseContentType, includeSyntaxHighlight);
     }
 
     public HttpTransaction setResponseBody(String responseBody) {
@@ -276,7 +278,8 @@ public class HttpTransaction {
 
     public List<HttpHeader> getRequestHeaders() {
         return JsonConvertor.getInstance().fromJson(requestHeaders,
-                new TypeToken<List<HttpHeader>>(){}.getType());
+                new TypeToken<List<HttpHeader>>() {
+                }.getType());
     }
 
     public String getRequestHeadersString(boolean withMarkup) {
@@ -295,7 +298,8 @@ public class HttpTransaction {
 
     public List<HttpHeader> getResponseHeaders() {
         return JsonConvertor.getInstance().fromJson(responseHeaders,
-                new TypeToken<List<HttpHeader>>(){}.getType());
+                new TypeToken<List<HttpHeader>>() {
+                }.getType());
     }
 
     public String getResponseHeadersString(boolean withMarkup) {
@@ -321,12 +325,13 @@ public class HttpTransaction {
     }
 
     public String getDurationString() {
-        return (tookMs != null) ? + tookMs + " ms" : null;
+        return (tookMs != null) ? +tookMs + " ms" : null;
     }
 
     public String getRequestSizeString() {
         return formatBytes((requestContentLength != null) ? requestContentLength : 0);
     }
+
     public String getResponseSizeString() {
         return (responseContentLength != null) ? formatBytes(responseContentLength) : null;
     }
@@ -351,9 +356,9 @@ public class HttpTransaction {
     public String getNotificationText() {
         switch (getStatus()) {
             case Failed:
-                return " ! ! !  " +  method + " " +path;
+                return " ! ! !  " + method + " " + path;
             case Requested:
-                return " . . .  " +  method + " " + path;
+                return " . . .  " + method + " " + path;
             default:
                 return String.valueOf(responseCode) + " " + method + " " + path;
         }
@@ -371,9 +376,11 @@ public class HttpTransaction {
         return httpHeaders;
     }
 
-    private String formatBody(String body, String contentType) {
+    private CharSequence formatBody(Context context, String body, String contentType, boolean includeSyntaxHighlight) {
         if (contentType != null && contentType.toLowerCase().contains("json")) {
-            return FormatUtils.formatJson(body);
+            return includeSyntaxHighlight
+                    ? FormatUtils.formatJsonWithSyntaxHighlight(context, body)
+                    : FormatUtils.formatJson(body);
         } else if (contentType != null && contentType.toLowerCase().contains("xml")) {
             return FormatUtils.formatXml(body);
         } else {
