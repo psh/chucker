@@ -16,8 +16,8 @@
 package com.readystatesoftware.chuck.internal.ui.transaction
 
 import android.os.Bundle
-import android.support.v4.app.Fragment
-import android.support.v7.widget.SearchView
+import androidx.fragment.app.Fragment
+import androidx.appcompat.widget.SearchView
 import android.text.Html
 import android.text.TextUtils
 import android.view.LayoutInflater
@@ -32,7 +32,7 @@ import com.readystatesoftware.chuck.internal.support.hightlight
 
 private const val ARG_TYPE = "type"
 
-class TransactionPayloadFragment : Fragment(), TransactionFragment, SearchView.OnQueryTextListener {
+class TransactionPayloadFragment : androidx.fragment.app.Fragment(), TransactionFragment, SearchView.OnQueryTextListener {
 
     internal lateinit var headers: TextView
     internal lateinit var body: TextView

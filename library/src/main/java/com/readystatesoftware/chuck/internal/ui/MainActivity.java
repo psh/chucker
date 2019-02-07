@@ -18,10 +18,10 @@ package com.readystatesoftware.chuck.internal.ui;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.support.design.widget.TabLayout;
-import android.support.v4.view.ViewPager;
-import android.support.v7.widget.Toolbar;
+import androidx.annotation.Nullable;
+import com.google.android.material.tabs.TabLayout;
+import androidx.viewpager.widget.ViewPager;
+import androidx.appcompat.widget.Toolbar;
 
 import com.readystatesoftware.chuck.api.Chuck;
 import com.readystatesoftware.chuck.R;

@@ -15,7 +15,7 @@
  */
 package com.readystatesoftware.chuck.internal.ui;
 
-import android.support.v7.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatActivity;
 
 public abstract class BaseChuckActivity extends AppCompatActivity {
 
