@@ -21,7 +21,7 @@
     <color name="chucker_status_300">#0D47A1</color>
 
     <color name="name_style">#0000cc</color>
-    <color name="number_style">#444444</color>
+    <color name="number_style">#ff8000</color>
     <color name="string_style">#660000</color>
     <color name="boolean_style">#008000</color>
 </resources>

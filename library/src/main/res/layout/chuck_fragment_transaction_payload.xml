@@ -37,7 +37,7 @@
             android:id="@+id/body"
             android:layout_width="match_parent"
             android:fontFamily="monospace"
-            android:textSize="10sp"
+            android:textSize="11sp"
             android:layout_height="wrap_content"
             android:textIsSelectable="true"/>
 

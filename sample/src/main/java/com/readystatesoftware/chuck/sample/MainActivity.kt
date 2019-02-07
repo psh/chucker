@@ -64,6 +64,7 @@ class MainActivity : AppCompatActivity() {
 
         with(SampleApiService.getInstance(getClient(this))) {
             get().enqueue(cb)
+            post(SampleApiService.Data(null)).enqueue(cb)
             post(SampleApiService.Data("posted")).enqueue(cb)
             patch(SampleApiService.Data("patched")).enqueue(cb)
             put(SampleApiService.Data("put")).enqueue(cb)
