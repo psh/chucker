@@ -42,8 +42,12 @@ class SampleApiService {
 
     static class Data {
         final String thing;
+        final Integer sizeOfThing;
+        final Boolean wasPatched;
         Data(String thing) {
             this.thing = thing;
+            this.sizeOfThing = thing != null ? thing.length() : null;
+            this.wasPatched = "patched".equals(thing);
         }
     }
 

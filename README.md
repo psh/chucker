@@ -11,6 +11,10 @@ Chucker simplifies the gathering of HTTP requests/responses, and Throwables. Chu
 
 Apps using Chucker will display a notifications showing a summary of ongoing HTTP activity and Throwables. Tapping on the notification launches the full Chucker UI. Apps can optionally suppress the notification, and launch the Chucker UI directly from within their own interface.
 
+*NEW* - JSON requests and responses are syntax highlighted.
+
+![Strings, Boolean and numbers](assets/showing-number.png) ![Formatting null values](assets/showing-null.png) 
+
 The main Chucker activity is launched in its own task, allowing it to be displayed alongside the host app UI using Android 7.x multi-window support.
 
 ![Multi-Window](assets/chucker-multiwindow.gif)
