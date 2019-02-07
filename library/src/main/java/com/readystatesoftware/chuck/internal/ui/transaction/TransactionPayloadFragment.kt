@@ -16,16 +16,11 @@
 package com.readystatesoftware.chuck.internal.ui.transaction
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
-import androidx.appcompat.widget.SearchView
 import android.text.Html
 import android.text.TextUtils
-import android.view.LayoutInflater
-import android.view.Menu
-import android.view.MenuInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.widget.TextView
+import androidx.appcompat.widget.SearchView
 import com.readystatesoftware.chuck.R
 import com.readystatesoftware.chuck.internal.data.HttpTransaction
 import com.readystatesoftware.chuck.internal.support.hightlight
@@ -81,21 +76,25 @@ class TransactionPayloadFragment : androidx.fragment.app.Fragment(), Transaction
     private fun populateUI() {
         if (isAdded && transaction != null) {
             when (type) {
-                TYPE_REQUEST -> setText(transaction!!.getRequestHeadersString(true),
-                                        transaction!!.formattedRequestBody, transaction!!.requestBodyIsPlainText())
-                TYPE_RESPONSE -> setText(transaction!!.getResponseHeadersString(true),
-                                         transaction!!.formattedResponseBody, transaction!!.responseBodyIsPlainText())
+                TYPE_REQUEST -> setText(
+                        transaction!!.getRequestHeadersString(true),
+                        transaction!!.getFormattedRequestBody(context, true),
+                        transaction!!.requestBodyIsPlainText())
+                TYPE_RESPONSE -> setText(
+                        transaction!!.getResponseHeadersString(true),
+                        transaction!!.getFormattedResponseBody(context, true),
+                        transaction!!.responseBodyIsPlainText())
             }
         }
     }
 
-    private fun setText(headersString: String, bodyString: String?, isPlainText: Boolean) {
+    private fun setText(headersString: String, bodyString: CharSequence?, isPlainText: Boolean) {
         headers.visibility = if (TextUtils.isEmpty(headersString)) View.GONE else View.VISIBLE
         headers.text = Html.fromHtml(headersString)
         if (!isPlainText) {
             body.text = getString(R.string.chuck_body_omitted)
         } else {
-            body.text = bodyString
+            body.setText(bodyString, TextView.BufferType.SPANNABLE)
         }
         originalBody = body.text.toString()
 
