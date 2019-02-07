@@ -2,8 +2,8 @@ package com.readystatesoftware.chuck.internal.support;
 
 import android.app.IntentService;
 import android.content.Intent;
-import android.support.annotation.IntDef;
-import android.support.annotation.Nullable;
+import androidx.annotation.IntDef;
+import androidx.annotation.Nullable;
 
 import com.readystatesoftware.chuck.internal.data.ChuckContentProvider;
 

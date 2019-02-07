@@ -17,7 +17,7 @@ package com.readystatesoftware.chuck.api;
 
 import android.content.Context;
 import android.content.Intent;
-import android.support.annotation.IntDef;
+import androidx.annotation.IntDef;
 
 import com.readystatesoftware.chuck.internal.support.ChuckCrashHandler;
 import com.readystatesoftware.chuck.internal.support.NotificationHelper;

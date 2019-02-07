@@ -17,7 +17,7 @@ package com.readystatesoftware.chuck.api;
 
 import android.content.Context;
 import android.net.Uri;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import android.util.Log;
 
 import com.readystatesoftware.chuck.internal.data.HttpTransaction;
@@ -27,7 +27,6 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Date;
 import java.util.Set;
 import java.util.TreeSet;
