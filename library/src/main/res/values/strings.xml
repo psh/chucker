@@ -45,9 +45,11 @@
     <string name="chuck_body_content_truncated">\n\n--- Content truncated ---</string>
     <string name="chuck_tab_network">Network</string>
     <string name="chuck_tab_errors">Errors</string>
+    <string name="chuck_tab_debug">Debug</string>
     <string name="chuck_notification_category">Chucker notifications</string>
     <string name="chuck_share_error_title">Error report</string>
     <string name="chuck_share_error_content"><![CDATA[Date: %s\nException: %s\nTag: %s\nMessage: %s\n\n%s]]></string>
     <string name="chuck_clear_http_confirmation">Do you want to clear complete network calls history?</string>
     <string name="chuck_clear_error_confirmation">Do you want to clear complete errors history?</string>
+    <string name="mock_badge_text">Mock</string>
 </resources>

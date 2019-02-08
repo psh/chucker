@@ -8,6 +8,7 @@ import com.readystatesoftware.chuck.api.*
 import kotlinx.android.synthetic.main.activity_main.do_http
 import kotlinx.android.synthetic.main.activity_main.launch_chucker_directly
 import kotlinx.android.synthetic.main.activity_main.trigger_exception
+import okhttp3.MediaType
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Call
@@ -38,9 +39,13 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun getClient(context: Context): OkHttpClient {
+        val mockedResponse = MockedResponse("bad_request", "Faked bad request", 400, MediaType.parse("application/json"), "{\"bad\": true}", listOf("bad/request"))
         val chuckInterceptor = ChuckInterceptor(context, collector)
                 .maxContentLength(250000L)
                 .throttlingDelay(NetworkThrottling.FiveSeconds)
+                .registerMockedResponses(mockedResponse)
+
+        chuckInterceptor.activateMockResponse(mockedResponse)
 
         return OkHttpClient.Builder()
                 // Add a ChuckInterceptor instance to your OkHttp client
@@ -62,6 +67,7 @@ class MainActivity : AppCompatActivity() {
 
         with(SampleApiService.getInstance(getClient(this))) {
             get().enqueue(cb)
+            bad().enqueue(cb)
             post(SampleApiService.Data(null)).enqueue(cb)
             post(SampleApiService.Data("posted")).enqueue(cb)
             patch(SampleApiService.Data("patched")).enqueue(cb)

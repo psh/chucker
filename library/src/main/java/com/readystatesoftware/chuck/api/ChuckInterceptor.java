@@ -20,6 +20,8 @@ import android.net.Uri;
 import android.util.Log;
 
 import com.readystatesoftware.chuck.internal.data.HttpTransaction;
+import com.readystatesoftware.chuck.internal.debug.DebuggingChainProcessor;
+import com.readystatesoftware.chuck.internal.debug.WrappedResult;
 import com.readystatesoftware.chuck.internal.support.IOUtils;
 
 import java.io.IOException;
@@ -29,7 +31,6 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.concurrent.TimeUnit;
 
 import androidx.annotation.NonNull;
 import okhttp3.Headers;
@@ -58,9 +59,6 @@ public final class ChuckInterceptor implements Interceptor {
 
     private Set<String> headersToRedact = new TreeSet<>();
 
-    @NetworkThrottling.ThrottlingDelay
-    private int throttlingDelay = NetworkThrottling.None;
-
     public ChuckInterceptor(Context context) {
         collector = new ChuckCollector(context);
         io = new IOUtils(context);
@@ -69,11 +67,6 @@ public final class ChuckInterceptor implements Interceptor {
     public ChuckInterceptor(Context context, ChuckCollector collector) {
         this.collector = collector;
         io = new IOUtils(context);
-    }
-
-    public ChuckInterceptor throttlingDelay(@NetworkThrottling.ThrottlingDelay int throttlingDelay) {
-        this.throttlingDelay = throttlingDelay;
-        return this;
     }
 
     /**
@@ -142,9 +135,7 @@ public final class ChuckInterceptor implements Interceptor {
 
         Uri transactionUri = collector.onRequestSent(transaction);
 
-        WrappedResult wrappedResult = processChain(chain, request);
-        transaction.setThrottlingDelay(wrappedResult.getThrottlingDelay())
-                .setMocked(wrappedResult.getMocked());
+        WrappedResult wrappedResult = DebuggingChainProcessor.INSTANCE.processChain(chain, request);
 
         if (wrappedResult.getError() != null) {
             transaction.setError(wrappedResult.getError().toString());
@@ -199,25 +190,22 @@ public final class ChuckInterceptor implements Interceptor {
         return response;
     }
 
-    private WrappedResult processChain(Chain chain, Request request) {
-        try {
-            if (throttlingDelay > 0) {
-                try {
-                    Log.i(LOG_TAG, "Starting throttling delay for " + request.url());
-                    Thread.sleep(throttlingDelay * 1000);
-                    Log.i(LOG_TAG, "Resuming actual service call for " + request.url());
-                } catch (InterruptedException ignored) {
-                }
-            }
+    public ChuckInterceptor throttlingDelay(@NetworkThrottling.ThrottlingDelay int throttlingDelay) {
+        DebuggingChainProcessor.INSTANCE.setThrottlingDelay(throttlingDelay);
+        return this;
+    }
 
-            long startNs = System.nanoTime();
-            Response proceed = chain.proceed(request);
-            long tookMs = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startNs);
+    public ChuckInterceptor registerMockedResponses(MockedResponse... responses) {
+        DebuggingChainProcessor.INSTANCE.registerMockedResponses(responses);
+        return this;
+    }
 
-            return new WrappedResult(tookMs - startNs, proceed, throttlingDelay);
-        } catch (IOException e) {
-            return new WrappedResult(0, null, throttlingDelay, e);
-        }
+    public void activateMockResponse(MockedResponse response) {
+        DebuggingChainProcessor.INSTANCE.activateMockResponse(response);
+    }
+
+    public void disableMockResponse(MockedResponse response) {
+        DebuggingChainProcessor.INSTANCE.disableMockResponse(response);
     }
 
     @NonNull

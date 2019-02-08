@@ -1,4 +1,4 @@
-package com.readystatesoftware.chuck.api
+package com.readystatesoftware.chuck.internal.debug
 
 import okhttp3.Response
 import java.io.IOException

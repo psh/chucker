@@ -47,6 +47,7 @@ public class HttpTransaction {
             "scheme",
             "requestContentLength",
             "responseCode",
+            "responseMessage",
             "error",
             "responseContentLength"
     };
@@ -79,9 +80,6 @@ public class HttpTransaction {
     private String responseHeaders;
     private String responseBody;
     private boolean responseBodyIsPlainText = true;
-
-    private int throttlingDelay = 0;
-    private boolean mocked = false;
 
     public Long getId() {
         return _id;
@@ -369,24 +367,6 @@ public class HttpTransaction {
 
     public boolean isSsl() {
         return scheme.toLowerCase().equals("https");
-    }
-
-    public int getThrottlingDelay() {
-        return throttlingDelay;
-    }
-
-    public HttpTransaction setThrottlingDelay(int throttlingDelay) {
-        this.throttlingDelay = throttlingDelay;
-        return this;
-    }
-
-    public boolean isMocked() {
-        return mocked;
-    }
-
-    public HttpTransaction setMocked(boolean mocked) {
-        this.mocked = mocked;
-        return this;
     }
 
     private List<HttpHeader> toHttpHeaderList(Headers headers) {

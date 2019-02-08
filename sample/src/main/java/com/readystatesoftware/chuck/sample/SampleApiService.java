@@ -52,6 +52,8 @@ class SampleApiService {
     }
 
     interface HttpbinApi {
+        @GET("/bad/request")
+        Call<Void> bad();
         @GET("/get")
         Call<Void> get();
         @POST("/post")

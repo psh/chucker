@@ -39,6 +39,7 @@ class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.ViewHol
     private final Context context;
     private final OnListFragmentInteractionListener listener;
     private final CursorAdapter cursorAdapter;
+    private final String mockBadgeText;
 
     private final int colorDefault;
     private final int colorRequested;
@@ -46,6 +47,9 @@ class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.ViewHol
     private final int color500;
     private final int color400;
     private final int color300;
+    private final int white;
+    private final int primary;
+    private final int grayText;
 
     TransactionAdapter(Context context, OnListFragmentInteractionListener listener) {
         this.listener = listener;
@@ -56,6 +60,10 @@ class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.ViewHol
         color500 = ContextCompat.getColor(context, R.color.chucker_status_500);
         color400 = ContextCompat.getColor(context, R.color.chucker_status_400);
         color300 = ContextCompat.getColor(context, R.color.chucker_status_300);
+        white = ContextCompat.getColor(context, android.R.color.white);
+        primary = ContextCompat.getColor(context, R.color.chucker_primary_color);
+        grayText = ContextCompat.getColor(context, R.color.chucker_gray_text_color);
+        mockBadgeText = context.getString(R.string.mock_badge_text);
 
         cursorAdapter = new CursorAdapter(TransactionAdapter.this.context, null, CursorAdapter.FLAG_REGISTER_CONTENT_OBSERVER) {
             @Override
@@ -76,8 +84,17 @@ class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.ViewHol
                 holder.ssl.setVisibility(transaction.isSsl() ? View.VISIBLE : View.GONE);
                 if (transaction.getStatus() == HttpTransaction.Status.Complete) {
                     holder.code.setText(String.valueOf(transaction.getResponseCode()));
-                    holder.duration.setText(transaction.getDurationString());
                     holder.size.setText(transaction.getTotalSizeString());
+                    String responseMessage = transaction.getResponseMessage();
+                    if (responseMessage != null && responseMessage.contains("MOCK")) {
+                        holder.duration.setText(mockBadgeText);
+                        holder.duration.setTextColor(white);
+                        holder.duration.setBackgroundColor(primary);
+                    } else {
+                        holder.duration.setText(transaction.getDurationString());
+                        holder.duration.setTextColor(grayText);
+                        holder.duration.setBackground(null);
+                    }
                 } else {
                     holder.code.setText("");
                     holder.duration.setText("");

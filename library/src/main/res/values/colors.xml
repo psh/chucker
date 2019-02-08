@@ -12,6 +12,7 @@
     <color name="chucker_secondary_dark_color">#00b248</color>
     <color name="chucker_primary_text_color">#ffffff</color>
     <color name="chucker_secondary_text_color">#000000</color>
+    <color name="chucker_gray_text_color">#858585</color>
 
     <color name="chucker_status_default">#212121</color>
     <color name="chucker_status_requested">#9E9E9E</color>
