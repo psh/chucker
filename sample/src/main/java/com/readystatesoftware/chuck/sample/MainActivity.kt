@@ -4,10 +4,7 @@ import android.content.Context
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import android.view.View
-import com.readystatesoftware.chuck.api.Chuck
-import com.readystatesoftware.chuck.api.ChuckCollector
-import com.readystatesoftware.chuck.api.ChuckInterceptor
-import com.readystatesoftware.chuck.api.RetentionManager
+import com.readystatesoftware.chuck.api.*
 import kotlinx.android.synthetic.main.activity_main.do_http
 import kotlinx.android.synthetic.main.activity_main.launch_chucker_directly
 import kotlinx.android.synthetic.main.activity_main.trigger_exception
@@ -43,6 +40,7 @@ class MainActivity : AppCompatActivity() {
     private fun getClient(context: Context): OkHttpClient {
         val chuckInterceptor = ChuckInterceptor(context, collector)
                 .maxContentLength(250000L)
+                .throttlingDelay(NetworkThrottling.FiveSeconds)
 
         return OkHttpClient.Builder()
                 // Add a ChuckInterceptor instance to your OkHttp client

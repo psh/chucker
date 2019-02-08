@@ -17,7 +17,6 @@ package com.readystatesoftware.chuck.api;
 
 import android.content.Context;
 import android.net.Uri;
-import androidx.annotation.NonNull;
 import android.util.Log;
 
 import com.readystatesoftware.chuck.internal.data.HttpTransaction;
@@ -32,6 +31,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
 
+import androidx.annotation.NonNull;
 import okhttp3.Headers;
 import okhttp3.Interceptor;
 import okhttp3.MediaType;
@@ -58,6 +58,9 @@ public final class ChuckInterceptor implements Interceptor {
 
     private Set<String> headersToRedact = new TreeSet<>();
 
+    @NetworkThrottling.ThrottlingDelay
+    private int throttlingDelay = NetworkThrottling.None;
+
     public ChuckInterceptor(Context context) {
         collector = new ChuckCollector(context);
         io = new IOUtils(context);
@@ -66,6 +69,11 @@ public final class ChuckInterceptor implements Interceptor {
     public ChuckInterceptor(Context context, ChuckCollector collector) {
         this.collector = collector;
         io = new IOUtils(context);
+    }
+
+    public ChuckInterceptor throttlingDelay(@NetworkThrottling.ThrottlingDelay int throttlingDelay) {
+        this.throttlingDelay = throttlingDelay;
+        return this;
     }
 
     /**
@@ -134,22 +142,22 @@ public final class ChuckInterceptor implements Interceptor {
 
         Uri transactionUri = collector.onRequestSent(transaction);
 
-        long startNs = System.nanoTime();
-        Response response;
-        try {
-            response = chain.proceed(request);
-        } catch (Exception e) {
-            transaction.setError(e.toString());
+        WrappedResult wrappedResult = processChain(chain, request);
+        transaction.setThrottlingDelay(wrappedResult.getThrottlingDelay())
+                .setMocked(wrappedResult.getMocked());
+
+        if (wrappedResult.getError() != null) {
+            transaction.setError(wrappedResult.getError().toString());
             collector.onResponseReceived(transaction, transactionUri);
-            throw e;
+            throw wrappedResult.getError();
         }
-        long tookMs = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startNs);
+        Response response = wrappedResult.getSuccess();
 
         ResponseBody responseBody = response.body();
 
         transaction.setRequestHeaders(filterHeaders(response.request().headers())) // includes headers added later in the chain
                 .setResponseDate(new Date())
-                .setTookMs(tookMs)
+                .setTookMs(wrappedResult.getElapsedTime())
                 .setProtocol(response.protocol().toString())
                 .setResponseCode(response.code())
                 .setResponseMessage(response.message());
@@ -189,6 +197,27 @@ public final class ChuckInterceptor implements Interceptor {
         collector.onResponseReceived(transaction, transactionUri);
 
         return response;
+    }
+
+    private WrappedResult processChain(Chain chain, Request request) {
+        try {
+            if (throttlingDelay > 0) {
+                try {
+                    Log.i(LOG_TAG, "Starting throttling delay for " + request.url());
+                    Thread.sleep(throttlingDelay * 1000);
+                    Log.i(LOG_TAG, "Resuming actual service call for " + request.url());
+                } catch (InterruptedException ignored) {
+                }
+            }
+
+            long startNs = System.nanoTime();
+            Response proceed = chain.proceed(request);
+            long tookMs = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startNs);
+
+            return new WrappedResult(tookMs - startNs, proceed, throttlingDelay);
+        } catch (IOException e) {
+            return new WrappedResult(0, null, throttlingDelay, e);
+        }
     }
 
     @NonNull
