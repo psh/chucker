@@ -7,7 +7,7 @@ import okhttp3.Request
 import java.io.IOException
 import java.util.concurrent.TimeUnit
 
-object DebuggingChainProcessor {
+class DebuggingChainProcessor {
     @NetworkThrottling.ThrottlingDelay
     var throttlingDelay = NetworkThrottling.None
 

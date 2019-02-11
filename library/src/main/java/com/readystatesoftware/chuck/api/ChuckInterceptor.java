@@ -54,19 +54,20 @@ public final class ChuckInterceptor implements Interceptor {
 
     private final ChuckCollector collector;
     private final IOUtils io;
+    private final DebuggingChainProcessor processor;
 
     private long maxContentLength = 250000L;
 
     private Set<String> headersToRedact = new TreeSet<>();
 
     public ChuckInterceptor(Context context) {
-        collector = new ChuckCollector(context);
-        io = new IOUtils(context);
+        this(context, new ChuckCollector(context));
     }
 
     public ChuckInterceptor(Context context, ChuckCollector collector) {
         this.collector = collector;
-        io = new IOUtils(context);
+        this.io = new IOUtils(context);
+        this.processor = new DebuggingChainProcessor();
     }
 
     /**
@@ -135,7 +136,7 @@ public final class ChuckInterceptor implements Interceptor {
 
         Uri transactionUri = collector.onRequestSent(transaction);
 
-        WrappedResult wrappedResult = DebuggingChainProcessor.INSTANCE.processChain(chain, request);
+        WrappedResult wrappedResult = processor.processChain(chain, request);
 
         if (wrappedResult.getError() != null) {
             transaction.setError(wrappedResult.getError().toString());
@@ -191,21 +192,21 @@ public final class ChuckInterceptor implements Interceptor {
     }
 
     public ChuckInterceptor throttlingDelay(@NetworkThrottling.ThrottlingDelay int throttlingDelay) {
-        DebuggingChainProcessor.INSTANCE.setThrottlingDelay(throttlingDelay);
+        processor.setThrottlingDelay(throttlingDelay);
         return this;
     }
 
     public ChuckInterceptor registerMockedResponses(MockedResponse... responses) {
-        DebuggingChainProcessor.INSTANCE.registerMockedResponses(responses);
+        processor.registerMockedResponses(responses);
         return this;
     }
 
     public void activateMockResponse(MockedResponse response) {
-        DebuggingChainProcessor.INSTANCE.activateMockResponse(response);
+        processor.activateMockResponse(response);
     }
 
     public void disableMockResponse(MockedResponse response) {
-        DebuggingChainProcessor.INSTANCE.disableMockResponse(response);
+        processor.disableMockResponse(response);
     }
 
     @NonNull

@@ -82,6 +82,8 @@ class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.ViewHol
                 holder.host.setText(transaction.getHost());
                 holder.start.setText(DateFormat.getTimeInstance().format(transaction.getRequestDate()));
                 holder.ssl.setVisibility(transaction.isSsl() ? View.VISIBLE : View.GONE);
+                holder.duration.setTextColor(grayText);
+                holder.duration.setBackground(null);
                 if (transaction.getStatus() == HttpTransaction.Status.Complete) {
                     holder.code.setText(String.valueOf(transaction.getResponseCode()));
                     holder.size.setText(transaction.getTotalSizeString());
@@ -92,8 +94,6 @@ class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.ViewHol
                         holder.duration.setBackgroundColor(primary);
                     } else {
                         holder.duration.setText(transaction.getDurationString());
-                        holder.duration.setTextColor(grayText);
-                        holder.duration.setBackground(null);
                     }
                 } else {
                     holder.code.setText("");
