@@ -54,7 +54,7 @@ public final class ChuckInterceptor implements Interceptor {
 
     private final ChuckCollector collector;
     private final IOUtils io;
-    private final DebuggingChainProcessor processor;
+    public static final DebuggingChainProcessor processor = new DebuggingChainProcessor();
 
     private long maxContentLength = 250000L;
 
@@ -67,7 +67,6 @@ public final class ChuckInterceptor implements Interceptor {
     public ChuckInterceptor(Context context, ChuckCollector collector) {
         this.collector = collector;
         this.io = new IOUtils(context);
-        this.processor = new DebuggingChainProcessor();
     }
 
     /**
@@ -191,21 +190,19 @@ public final class ChuckInterceptor implements Interceptor {
         return response;
     }
 
-    public ChuckInterceptor throttlingDelay(@NetworkThrottling.ThrottlingDelay int throttlingDelay) {
+    public static void throttlingDelay(@NetworkThrottling.ThrottlingDelay int throttlingDelay) {
         processor.setThrottlingDelay(throttlingDelay);
-        return this;
     }
 
-    public ChuckInterceptor registerMockedResponses(MockedResponse... responses) {
+    public static void registerMockedResponses(MockedResponse... responses) {
         processor.registerMockedResponses(responses);
-        return this;
     }
 
-    public void activateMockResponse(MockedResponse response) {
+    public static void activateMockResponse(MockedResponse response) {
         processor.activateMockResponse(response);
     }
 
-    public void disableMockResponse(MockedResponse response) {
+    public static void disableMockResponse(MockedResponse response) {
         processor.disableMockResponse(response);
     }
 
