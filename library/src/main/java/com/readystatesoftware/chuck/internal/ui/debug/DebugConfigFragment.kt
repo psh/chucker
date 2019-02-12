@@ -23,6 +23,6 @@ class DebugConfigFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         val recycler = view.findViewById<RecyclerView>(R.id.config_recycler)
         recycler.layoutManager = LinearLayoutManager(context)
-        recycler.adapter = DebugConfigAdapter().apply { initFrom(ChuckInterceptor.DEBUGGING_CHAIN_PROCESSOR) }
+        recycler.adapter = DebugConfigAdapter().apply { initFrom(ChuckInterceptor.processor) }
     }
 }

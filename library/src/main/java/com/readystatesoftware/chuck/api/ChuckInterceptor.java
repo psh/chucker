@@ -52,7 +52,6 @@ public final class ChuckInterceptor implements Interceptor {
     private static final String LOG_TAG = ChuckInterceptor.class.getSimpleName();
     private static final Charset UTF8 = Charset.forName("UTF-8");
 
-    public static final DebuggingChainProcessor DEBUGGING_CHAIN_PROCESSOR = new DebuggingChainProcessor();
     private final ChuckCollector collector;
     private final IOUtils io;
     public static final DebuggingChainProcessor processor = new DebuggingChainProcessor();
