@@ -7,12 +7,12 @@ import okhttp3.Request
 import java.io.IOException
 import java.util.concurrent.TimeUnit
 
-object DebuggingChainProcessor {
+class DebuggingChainProcessor {
     @NetworkThrottling.ThrottlingDelay
     var throttlingDelay = NetworkThrottling.None
 
-    private val allMockedResponses = mutableListOf<MockedResponse>()
-    private val activeMockedResponses = mutableListOf<MockedResponse>()
+    val allMockedResponses = mutableListOf<MockedResponse>()
+    val activeMockedResponses = mutableListOf<MockedResponse>()
 
     fun registerMockedResponses(vararg responses: MockedResponse) {
         allMockedResponses.addAll(responses)

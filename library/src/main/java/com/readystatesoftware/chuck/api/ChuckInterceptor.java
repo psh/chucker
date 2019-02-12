@@ -52,6 +52,7 @@ public final class ChuckInterceptor implements Interceptor {
     private static final String LOG_TAG = ChuckInterceptor.class.getSimpleName();
     private static final Charset UTF8 = Charset.forName("UTF-8");
 
+    public static final DebuggingChainProcessor DEBUGGING_CHAIN_PROCESSOR = new DebuggingChainProcessor();
     private final ChuckCollector collector;
     private final IOUtils io;
 
@@ -135,7 +136,7 @@ public final class ChuckInterceptor implements Interceptor {
 
         Uri transactionUri = collector.onRequestSent(transaction);
 
-        WrappedResult wrappedResult = DebuggingChainProcessor.INSTANCE.processChain(chain, request);
+        WrappedResult wrappedResult = DEBUGGING_CHAIN_PROCESSOR.processChain(chain, request);
 
         if (wrappedResult.getError() != null) {
             transaction.setError(wrappedResult.getError().toString());
@@ -191,21 +192,21 @@ public final class ChuckInterceptor implements Interceptor {
     }
 
     public ChuckInterceptor throttlingDelay(@NetworkThrottling.ThrottlingDelay int throttlingDelay) {
-        DebuggingChainProcessor.INSTANCE.setThrottlingDelay(throttlingDelay);
+        DEBUGGING_CHAIN_PROCESSOR.setThrottlingDelay(throttlingDelay);
         return this;
     }
 
     public ChuckInterceptor registerMockedResponses(MockedResponse... responses) {
-        DebuggingChainProcessor.INSTANCE.registerMockedResponses(responses);
+        DEBUGGING_CHAIN_PROCESSOR.registerMockedResponses(responses);
         return this;
     }
 
     public void activateMockResponse(MockedResponse response) {
-        DebuggingChainProcessor.INSTANCE.activateMockResponse(response);
+        DEBUGGING_CHAIN_PROCESSOR.activateMockResponse(response);
     }
 
     public void disableMockResponse(MockedResponse response) {
-        DebuggingChainProcessor.INSTANCE.disableMockResponse(response);
+        DEBUGGING_CHAIN_PROCESSOR.disableMockResponse(response);
     }
 
     @NonNull

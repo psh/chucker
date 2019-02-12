@@ -3,7 +3,7 @@ package com.readystatesoftware.chuck.api
 import okhttp3.*
 
 class MockedResponse(
-        private val id: String,
+        internal val id: String,
         private val description: String,
         private val responseCode: Int = 200,
         private val mediaType: MediaType? = MediaType.parse("application/json"),
