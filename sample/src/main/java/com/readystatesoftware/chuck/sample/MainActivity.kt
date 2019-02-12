@@ -2,12 +2,10 @@ package com.readystatesoftware.chuck.sample
 
 import android.content.Context
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
 import android.view.View
+import androidx.appcompat.app.AppCompatActivity
 import com.readystatesoftware.chuck.api.*
-import kotlinx.android.synthetic.main.activity_main.do_http
-import kotlinx.android.synthetic.main.activity_main.launch_chucker_directly
-import kotlinx.android.synthetic.main.activity_main.trigger_exception
+import kotlinx.android.synthetic.main.activity_main.*
 import okhttp3.MediaType
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -31,6 +29,12 @@ class MainActivity : AppCompatActivity() {
             setOnClickListener { launchChuckDirectly() }
         }
 
+        val badRequest = MockedResponse("bad_request", "Faked bad request", 400, MediaType.parse("application/json"), "{\"bad\": true}", listOf("bad/request"))
+        val missing = MockedResponse("missing", "Fake missing", 404, MediaType.parse("application/json"), "", listOf("something"))
+        ChuckInterceptor.registerMockedResponses(badRequest, missing)
+        ChuckInterceptor.activateMockResponse(badRequest)
+        ChuckInterceptor.throttlingDelay(NetworkThrottling.FiveSeconds)
+
         collector = ChuckCollector(this)
                 .showNotification(true)
                 .retentionManager(RetentionManager(this, ChuckCollector.Period.ONE_HOUR))
@@ -39,13 +43,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun getClient(context: Context): OkHttpClient {
-        val mockedResponse = MockedResponse("bad_request", "Faked bad request", 400, MediaType.parse("application/json"), "{\"bad\": true}", listOf("bad/request"))
         val chuckInterceptor = ChuckInterceptor(context, collector)
-                .maxContentLength(250000L)
-                .throttlingDelay(NetworkThrottling.FiveSeconds)
-                .registerMockedResponses(mockedResponse)
-
-        chuckInterceptor.activateMockResponse(mockedResponse)
+                .maxContentLength(250000L);
 
         return OkHttpClient.Builder()
                 // Add a ChuckInterceptor instance to your OkHttp client
@@ -62,7 +61,9 @@ class MainActivity : AppCompatActivity() {
     private fun doHttpActivity() {
         val cb = object : Callback<Void> {
             override fun onResponse(call: Call<Void>, response: Response<Void>) {}
-            override fun onFailure(call: Call<Void>, t: Throwable) { t.printStackTrace() }
+            override fun onFailure(call: Call<Void>, t: Throwable) {
+                t.printStackTrace()
+            }
         }
 
         with(SampleApiService.getInstance(getClient(this))) {

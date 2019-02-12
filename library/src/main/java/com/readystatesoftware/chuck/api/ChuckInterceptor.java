@@ -55,19 +55,19 @@ public final class ChuckInterceptor implements Interceptor {
     public static final DebuggingChainProcessor DEBUGGING_CHAIN_PROCESSOR = new DebuggingChainProcessor();
     private final ChuckCollector collector;
     private final IOUtils io;
+    public static final DebuggingChainProcessor processor = new DebuggingChainProcessor();
 
     private long maxContentLength = 250000L;
 
     private Set<String> headersToRedact = new TreeSet<>();
 
     public ChuckInterceptor(Context context) {
-        collector = new ChuckCollector(context);
-        io = new IOUtils(context);
+        this(context, new ChuckCollector(context));
     }
 
     public ChuckInterceptor(Context context, ChuckCollector collector) {
         this.collector = collector;
-        io = new IOUtils(context);
+        this.io = new IOUtils(context);
     }
 
     /**
@@ -136,7 +136,7 @@ public final class ChuckInterceptor implements Interceptor {
 
         Uri transactionUri = collector.onRequestSent(transaction);
 
-        WrappedResult wrappedResult = DEBUGGING_CHAIN_PROCESSOR.processChain(chain, request);
+        WrappedResult wrappedResult = processor.processChain(chain, request);
 
         if (wrappedResult.getError() != null) {
             transaction.setError(wrappedResult.getError().toString());
@@ -191,22 +191,20 @@ public final class ChuckInterceptor implements Interceptor {
         return response;
     }
 
-    public ChuckInterceptor throttlingDelay(@NetworkThrottling.ThrottlingDelay int throttlingDelay) {
-        DEBUGGING_CHAIN_PROCESSOR.setThrottlingDelay(throttlingDelay);
-        return this;
+    public static void throttlingDelay(@NetworkThrottling.ThrottlingDelay int throttlingDelay) {
+        processor.setThrottlingDelay(throttlingDelay);
     }
 
-    public ChuckInterceptor registerMockedResponses(MockedResponse... responses) {
-        DEBUGGING_CHAIN_PROCESSOR.registerMockedResponses(responses);
-        return this;
+    public static void registerMockedResponses(MockedResponse... responses) {
+        processor.registerMockedResponses(responses);
     }
 
-    public void activateMockResponse(MockedResponse response) {
-        DEBUGGING_CHAIN_PROCESSOR.activateMockResponse(response);
+    public static void activateMockResponse(MockedResponse response) {
+        processor.activateMockResponse(response);
     }
 
-    public void disableMockResponse(MockedResponse response) {
-        DEBUGGING_CHAIN_PROCESSOR.disableMockResponse(response);
+    public static void disableMockResponse(MockedResponse response) {
+        processor.disableMockResponse(response);
     }
 
     @NonNull
