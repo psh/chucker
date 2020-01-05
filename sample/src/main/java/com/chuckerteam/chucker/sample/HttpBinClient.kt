@@ -6,15 +6,15 @@ import com.chuckerteam.chucker.api.ChuckerCollector
 import com.chuckerteam.chucker.api.ChuckerInterceptor
 import com.chuckerteam.chucker.api.RetentionManager
 import com.chuckerteam.chucker.sample.HttpBinApi.Data
-import okhttp3.OkHttpClient
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.okhttp.OkHttp
+import io.ktor.client.features.json.GsonSerializer
+import io.ktor.client.features.json.JsonFeature
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
 import okhttp3.logging.HttpLoggingInterceptor
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
-
-private const val BASE_URL = "https://httpbin.org"
+import java.util.concurrent.TimeUnit
 
 class HttpBinClient(
     context: Context
@@ -32,60 +32,53 @@ class HttpBinClient(
         maxContentLength = 250000L
     )
 
-    private val httpClient =
-        OkHttpClient.Builder()
-            // Add a ChuckerInterceptor instance to your OkHttp client
-            .addInterceptor(chuckerInterceptor)
-            .addInterceptor(HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY))
-            .build()
-
-    private val api: HttpBinApi by lazy {
-        Retrofit.Builder()
-            .baseUrl(BASE_URL)
-            .addConverterFactory(GsonConverterFactory.create())
-            .client(httpClient)
-            .build()
-            .create(HttpBinApi::class.java)
+private val httpClient = HttpClient(OkHttp) {
+    install(JsonFeature) {
+        serializer = GsonSerializer()
     }
+    engine {
+        addInterceptor(chuckerInterceptor)
+        addInterceptor(HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY))
+        config {
+            followRedirects(true)
+            readTimeout(30, TimeUnit.SECONDS)
+            connectTimeout(30, TimeUnit.SECONDS)
+            callTimeout(30, TimeUnit.SECONDS)
+        }
+    }
+}
 
     @Suppress("MagicNumber")
-    internal fun doHttpActivity() {
-        val cb = object : Callback<Void> {
-            override fun onResponse(call: Call<Void>, response: Response<Void>) {
-                // no-op
-            }
-            override fun onFailure(call: Call<Void>, t: Throwable) { t.printStackTrace() }
-        }
+    internal fun doHttpActivity() = GlobalScope.launch {
+        val api = HttpBinApi(httpClient)
 
-        with(api) {
-            get().enqueue(cb)
-            post(Data("posted")).enqueue(cb)
-            patch(Data("patched")).enqueue(cb)
-            put(Data("put")).enqueue(cb)
-            delete().enqueue(cb)
-            status(201).enqueue(cb)
-            status(401).enqueue(cb)
-            status(500).enqueue(cb)
-            delay(9).enqueue(cb)
-            delay(15).enqueue(cb)
-            redirectTo("https://http2.akamai.com").enqueue(cb)
-            redirect(3).enqueue(cb)
-            redirectRelative(2).enqueue(cb)
-            redirectAbsolute(4).enqueue(cb)
-            stream(500).enqueue(cb)
-            streamBytes(2048).enqueue(cb)
-            image("image/png").enqueue(cb)
-            gzip().enqueue(cb)
-            xml().enqueue(cb)
-            utf8().enqueue(cb)
-            deflate().enqueue(cb)
-            cookieSet("v").enqueue(cb)
-            basicAuth("me", "pass").enqueue(cb)
-            drip(512, 5, 1, 200).enqueue(cb)
-            deny().enqueue(cb)
-            cache("Mon").enqueue(cb)
-            cache(30).enqueue(cb)
-        }
+        async { api.get("/get") }
+        async { api.post("/post", Data("A String")) }
+        async { api.patch("/patch", Data("patched")) }
+        async { api.put("/put", Data("put")) }
+        async { api.delete("/delete") }
+        async { api.status(201) }
+        async { api.status(401) }
+        async { api.status(500) }
+        async { api.delay(9) }
+        async { api.delay(15) }
+        async { api.redirectTo("https://http2.akamai.com") }
+        async { api.redirect(3) }
+        async { api.redirectRelative(2) }
+        async { api.redirectAbsolute(4) }
+        async { api.stream(500) }
+        async { api.streamBytes(2048) }
+        async { api.image("image/png") }
+        async { api.gzip() }
+        async { api.xml() }
+        async { api.utf8() }
+        async { api.deflate() }
+        async { api.cookieSet("v") }
+        async { api.basicAuth("me", "pass") }
+        async { api.drip(512, 5, 1, 200) }
+        async { api.deny() }
+        async { api.cache("Mon") }
+        async { api.cache(30) }
     }
 
     internal fun initializeCrashHandler() {
@@ -97,4 +90,5 @@ class HttpBinClient(
         // You can also throw exception, it will be caught thanks to "Chucker.registerDefaultCrashHandler"
         // throw new RuntimeException("User triggered the button");
     }
+
 }
