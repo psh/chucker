@@ -16,14 +16,14 @@ class MainActivity : AppCompatActivity() {
         client = HttpBinClient(applicationContext)
 
         do_http.setOnClickListener { client.doHttpActivity() }
-        trigger_exception.setOnClickListener { client.recordException() }
+//        trigger_exception.setOnClickListener { client.recordException() }
 
         with(launch_chucker_directly) {
             visibility = if (Chucker.isOp) View.VISIBLE else View.GONE
             setOnClickListener { launchChuckerDirectly() }
         }
 
-        client.initializeCrashHandler()
+//        client.initializeCrashHandler()
     }
 
     private fun launchChuckerDirectly() {

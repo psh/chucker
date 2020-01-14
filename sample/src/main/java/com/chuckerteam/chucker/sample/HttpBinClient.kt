@@ -1,52 +1,35 @@
 package com.chuckerteam.chucker.sample
 
 import android.content.Context
-import com.chuckerteam.chucker.api.Chucker
-import com.chuckerteam.chucker.api.ChuckerCollector
-import com.chuckerteam.chucker.api.ChuckerInterceptor
 import com.chuckerteam.chucker.api.RetentionManager
 import com.chuckerteam.chucker.sample.HttpBinApi.Data
 import io.ktor.client.HttpClient
-import io.ktor.client.engine.okhttp.OkHttp
+import io.ktor.client.engine.cio.CIO
 import io.ktor.client.features.json.GsonSerializer
 import io.ktor.client.features.json.JsonFeature
+import io.ktor.util.KtorExperimentalAPI
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
-import okhttp3.logging.HttpLoggingInterceptor
-import java.util.concurrent.TimeUnit
 
-class HttpBinClient(
-    context: Context
-) {
+@Suppress("DeferredResultUnused")
+@KtorExperimentalAPI
+class HttpBinClient(context: Context) {
 
-    private val collector = ChuckerCollector(
-        context = context,
-        showNotification = true,
-        retentionPeriod = RetentionManager.Period.ONE_HOUR
-    )
-
-    private val chuckerInterceptor = ChuckerInterceptor(
-        context = context,
-        collector = collector,
-        maxContentLength = 250000L
-    )
-
-private val httpClient = HttpClient(OkHttp) {
-    install(JsonFeature) {
-        serializer = GsonSerializer()
-    }
-    engine {
-        addInterceptor(chuckerInterceptor)
-        addInterceptor(HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY))
-        config {
-            followRedirects(true)
-            readTimeout(30, TimeUnit.SECONDS)
-            connectTimeout(30, TimeUnit.SECONDS)
-            callTimeout(30, TimeUnit.SECONDS)
+    private val httpClient = HttpClient(CIO) {
+        engine {
+            endpoint.connectTimeout = 30000
+        }
+        install(JsonFeature) {
+            serializer = GsonSerializer()
+        }
+        install(ChuckerLogging) {
+            chuckerContext = context
+            showNotification = true
+            retentionPeriod = RetentionManager.Period.ONE_HOUR
+            maxContentLength = 250000L
         }
     }
-}
 
     @Suppress("MagicNumber")
     internal fun doHttpActivity() = GlobalScope.launch {
@@ -80,15 +63,4 @@ private val httpClient = HttpClient(OkHttp) {
         async { api.cache("Mon") }
         async { api.cache(30) }
     }
-
-    internal fun initializeCrashHandler() {
-        Chucker.registerDefaultCrashHandler(collector)
-    }
-
-    internal fun recordException() {
-        collector.onError("Example button pressed", RuntimeException("User triggered the button"))
-        // You can also throw exception, it will be caught thanks to "Chucker.registerDefaultCrashHandler"
-        // throw new RuntimeException("User triggered the button");
-    }
-
 }

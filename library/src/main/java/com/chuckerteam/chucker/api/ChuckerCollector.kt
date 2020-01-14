@@ -47,7 +47,7 @@ class ChuckerCollector @JvmOverloads constructor(
      * Call this method when you send an HTTP request.
      * @param transaction The HTTP transaction sent
      */
-    internal fun onRequestSent(transaction: HttpTransaction) {
+     fun onRequestSent(transaction: HttpTransaction) {
         RepositoryProvider.transaction().insertTransaction(transaction)
         if (showNotification) {
             notificationHelper.show(transaction)
@@ -60,7 +60,7 @@ class ChuckerCollector @JvmOverloads constructor(
      * It must be called after [ChuckerCollector.onRequestSent].
      * @param transaction The sent HTTP transaction completed with the response
      */
-    internal fun onResponseReceived(transaction: HttpTransaction) {
+     fun onResponseReceived(transaction: HttpTransaction) {
         val updated = RepositoryProvider.transaction().updateTransaction(transaction)
         if (showNotification && updated > 0) {
             notificationHelper.show(transaction)
