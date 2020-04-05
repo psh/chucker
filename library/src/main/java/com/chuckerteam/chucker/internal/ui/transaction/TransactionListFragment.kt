@@ -78,8 +78,8 @@ internal class TransactionListFragment :
         searchView.setIconifiedByDefault(true)
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return if (item.itemId == R.id.clear) {
+    override fun onOptionsItemSelected(item: MenuItem): Boolean = when (item.itemId) {
+        R.id.clear -> {
             MaterialAlertDialogBuilder(requireContext())
                 .setTitle(R.string.chucker_clear)
                 .setMessage(R.string.chucker_clear_http_confirmation)
@@ -91,7 +91,11 @@ internal class TransactionListFragment :
                 .setNegativeButton(R.string.chucker_cancel, null)
                 .show()
             true
-        } else {
+        }
+        R.id.show_chart -> {
+            true
+        }
+        else -> {
             super.onOptionsItemSelected(item)
         }
     }
