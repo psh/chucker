@@ -22,6 +22,7 @@ internal class TransactionAdapter internal constructor(
     private val listener: TransactionClickListListener?
 ) : RecyclerView.Adapter<TransactionAdapter.TransactionViewHolder>() {
     private var transactions: List<HttpTransactionTuple> = arrayListOf()
+    private val transactionStats = TransactionStats()
 
     private val colorDefault: Int = ContextCompat.getColor(context, R.color.chucker_status_default)
     private val colorRequested: Int = ContextCompat.getColor(context, R.color.chucker_status_requested)
@@ -42,6 +43,7 @@ internal class TransactionAdapter internal constructor(
 
     fun setData(httpTransactions: List<HttpTransactionTuple>) {
         this.transactions = httpTransactions
+        transactionStats.setData(httpTransactions)
         notifyDataSetChanged()
     }
 
@@ -75,6 +77,13 @@ internal class TransactionAdapter internal constructor(
                 if (transaction.status === HttpTransaction.Status.Complete) {
                     code.text = transaction.responseCode.toString()
                     duration.text = transaction.durationString
+                    duration.setTextColor(
+                        if (transactionStats.statsFor(transaction)?.isOutlier(transaction.tookMs) == true) {
+                            colorError
+                        } else {
+                            colorDefault
+                        }
+                    )
                     size.text = transaction.totalSizeString
                 } else {
                     code.text = ""
