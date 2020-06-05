@@ -2,7 +2,8 @@ package com.chuckerteam.chucker.internal.ui.transaction
 
 import com.chuckerteam.chucker.internal.data.entity.HttpTransaction
 import com.chuckerteam.chucker.internal.data.entity.HttpTransactionTuple
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import okhttp3.HttpUrl
@@ -12,9 +13,9 @@ internal class TransactionStats {
     private var stats: Map<HttpUrl, StatsHolder> = mutableMapOf()
 
     fun setData(httpTransactions: List<HttpTransactionTuple>) {
-        GlobalScope.launch {
+        CoroutineScope(Dispatchers.IO).launch {
             async {
-                computeStats(httpTransactions)
+                stats = computeStats(httpTransactions)
             }
         }
     }
@@ -25,8 +26,8 @@ internal class TransactionStats {
     fun statsFor(transaction: HttpTransaction): StatsHolder? =
         stats[urlKey(transaction.scheme, transaction.host, transaction.path)]
 
-    private fun computeStats(data: List<HttpTransactionTuple>) {
-        stats = data.groupBy { urlKey(it.scheme, it.host, it.path) }
+    private fun computeStats(data: List<HttpTransactionTuple>) : Map<HttpUrl, StatsHolder> {
+        return data.groupBy { urlKey(it.scheme, it.host, it.path) }
             .mapValues { StatsHolder(it.value) }
             .toSortedMap(compareBy { it.toString() })
     }
@@ -34,6 +35,10 @@ internal class TransactionStats {
     private fun urlKey(scheme: String?, host: String?, path: String?): HttpUrl {
         val partial = if (true == path?.contains("?")) path.split("?")[0] else path
         return HttpUrl.parse("$scheme://$host$partial")!!
+    }
+
+    fun isOutlier(tuple: HttpTransactionTuple): Boolean {
+        return statsFor(tuple)?.isOutlier(tuple.tookMs) == true
     }
 
     class StatsHolder(points: List<HttpTransactionTuple>) {
@@ -73,8 +78,9 @@ internal class TransactionStats {
             if (durations.isEmpty() || average == null || sd == null || tookMs == null) {
                 false
             } else {
-                // calculated the Z-score for this observation.  A value > 2 represents
-                // an outlier, as  95% of data should fall into the 0.0 - 2.0 range.
+                // Calculate the Z-score for this observation.  A value > 2 represents
+                // an outlier, as (0.0 < Z-score < 2.0) represents 95% of the
+                // population if normally distributed.
                 (tookMs.toDouble() - average) / sd > 2.0
             }
 

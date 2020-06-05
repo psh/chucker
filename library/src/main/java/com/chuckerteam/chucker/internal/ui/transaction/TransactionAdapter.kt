@@ -77,13 +77,7 @@ internal class TransactionAdapter internal constructor(
                 if (transaction.status === HttpTransaction.Status.Complete) {
                     code.text = transaction.responseCode.toString()
                     duration.text = transaction.durationString
-                    duration.setTextColor(
-                        if (transactionStats.statsFor(transaction)?.isOutlier(transaction.tookMs) == true) {
-                            colorError
-                        } else {
-                            colorDefault
-                        }
-                    )
+                    duration.setTextColor(if (isOutlier(transaction)) colorError else colorDefault)
                     size.text = transaction.totalSizeString
                 } else {
                     code.text = ""
@@ -120,6 +114,9 @@ internal class TransactionAdapter internal constructor(
             itemBinding.path.setTextColor(color)
         }
     }
+
+    private fun isOutlier(transaction: HttpTransactionTuple) =
+        transactionStats.isOutlier(transaction)
 
     interface TransactionClickListListener {
         fun onTransactionClick(transactionId: Long, position: Int)
